@@ -1,37 +1,19 @@
-name: 24-7 News Cloud Automator
+name: 24-7 Direct News Automator
 
 on:
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *' # Automatically runs every hour
+  workflow_dispatch: # Allows you to click the manual test button
 
 env:
-  # This fixes the June 2026 GitHub warning perfectly
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Copy project files to cloud server
+      - name: Copy project files
         uses: actions/checkout@v4
 
-      - name: Run your news parser code
+      - name: Run code to scrape and upload news
         run: node index.js
-
-      - name: Read text content
-        id: read_content
-        run: |
-          echo "SUBJECT=$(cat email_subject.txt)" >> $GITHUB_ENV
-          
-      - name: Send Post to Blogger via Email Robot
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{secrets.MY_EMAIL}}
-          password: ${{secrets.MY_EMAIL_APP_PASSWORD}}
-          subject: "${{ env.SUBJECT }}"
-          to: authenticnews@blogger.com
-          from: Cloud Scraper Robot
-          body: file://email_body.txt # Changed 'box' to 'body' here!
