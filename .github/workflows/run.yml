@@ -2,8 +2,12 @@ name: 24-7 News Cloud Automator
 
 on:
   schedule:
-    - cron: '0 * * * *' # Forces the system to run automatically every hour, 24/7
-  workflow_dispatch: # Gives you a manual button to test it instantly
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+env:
+  # This fixes the June 2026 GitHub warning perfectly
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
 
 jobs:
   build-and-publish:
@@ -28,6 +32,6 @@ jobs:
           username: ${{secrets.MY_EMAIL}}
           password: ${{secrets.MY_EMAIL_APP_PASSWORD}}
           subject: "${{ env.SUBJECT }}"
-          to: authenticnews@bloggger.com
+          to: authenticnews@blogger.com
           from: Cloud Scraper Robot
-          box: file://email_body.txt
+          body: file://email_body.txt # Changed 'box' to 'body' here!
