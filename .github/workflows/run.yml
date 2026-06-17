@@ -1,0 +1,33 @@
+name: 24-7 News Cloud Automator
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Forces the system to run automatically every hour, 24/7
+  workflow_dispatch: # Gives you a manual button to test it instantly
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copy project files to cloud server
+        uses: actions/checkout@v4
+
+      - name: Run your news parser code
+        run: node index.js
+
+      - name: Read text content
+        id: read_content
+        run: |
+          echo "SUBJECT=$(cat email_subject.txt)" >> $GITHUB_ENV
+          
+      - name: Send Post to Blogger via Email Robot
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{secrets.MY_EMAIL}}
+          password: ${{secrets.MY_EMAIL_APP_PASSWORD}}
+          subject: "${{ env.SUBJECT }}"
+          to: authenticnews@bloggger.com
+          from: Cloud Scraper Robot
+          box: file://email_body.txt
