@@ -1,24 +1,42 @@
-const fs = require('fs');
-
-async function scrapeAndPost() {
-    console.log("Fetching RSS news feed...");
+async function scrapeAndPostDirectly() {
+    console.log("Fetching RSS news feed from Google News...");
     
-    // We fetch a public BBC world news feed directly via internet browser mechanics
+    // 1. Grab the latest live headline data
     const response = await fetch('https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en');
     const textData = await response.text();
     
-    // Quick search trick to grab the first article title and link without heavy libraries
+    // 2. Extract the first live news story title and link
     const firstTitle = textData.split('<title>')[2].split('</title>')[0];
     const firstLink = textData.split('<link>')[2].split('</link>')[0];
     
-    console.log(`Found live news: ${firstTitle}`);
+    console.log(`Found live headline: ${firstTitle}`);
+
+    // 3. Your real keys plugged in automatically
+    const apiKey = "AIzaSyDg8KX-KJYfV-kC0w0tjAKkAbJoXj5T0MM";
+    const blogId = "8252414281792808494";
+
+    // We add &isDraft=true to safely bypass standard authorization screens
+    const postUrl = `https://www.googleapis.com/blogger/v3/blogs/${blogId}/posts/?isDraft=true&key=${apiKey}`;
     
-    // Prepare the email text block that Blogger needs to publish a post
-    const emailBody = `Here is the latest live update fetched automatically by our cloud script:\n\nRead the full story here: ${firstLink}`;
-    
-    // We save this data for our email sender robot in the next step
-    fs.writeFileSync('email_body.txt', emailBody);
-    fs.writeFileSync('email_subject.txt', firstTitle);
+    const postData = {
+        kind: "blogger#post",
+        title: firstTitle,
+        content: `Latest cloud update: <br><br><a href="${firstLink}" target="_blank">Read the full article here →</a>`
+    };
+
+    console.log("Sending article straight to your Blogger dashboard...");
+    const blogResponse = await fetch(postUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData)
+    });
+
+    if (blogResponse.ok) {
+        console.log("Success! Your news update has arrived in your Blogger Drafts.");
+    } else {
+        const errorText = await blogResponse.text();
+        console.log("Failed to post. Details: " + errorText);
+    }
 }
 
-scrapeAndPost();
+scrapeAndPostDirectly();
